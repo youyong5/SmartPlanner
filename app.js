@@ -63,6 +63,13 @@ function localTime(minute, includeDate = true) {
   return new Intl.DateTimeFormat('zh-CN', options).format(date);
 }
 
+function localRange(start, end) {
+  const first = dateForMinute(start);
+  const last = dateForMinute(end);
+  const sameDay = first && last && first.toDateString() === last.toDateString();
+  return `${localTime(start)} — ${localTime(end, !sameDay)}`;
+}
+
 function localInput(minute) {
   const date = dateForMinute(minute);
   if (!date) return '';
@@ -86,16 +93,13 @@ function renderEvents() {
   $('#event-count').textContent = String(plan.fixed_events.length);
   $('#event-list').innerHTML = plan.fixed_events.map((event) => {
     const info = eventDisplay(event);
-    const temporary = !SCENARIOS[scenarioKey].events[event.id];
-    const style = info.kind === '考试' ? 'exam' : temporary ? 'temp' : '';
-    const icon = info.kind === '考试' ? '✦' : temporary ? '+' : '▣';
-    return `<div class="event-mini ${style}"><span class="event-symbol" aria-hidden="true">${icon}</span><div class="event-mini-body"><strong>${escapeHtml(info.name)}</strong><small>${escapeHtml(localTime(event.start))} – ${escapeHtml(localTime(event.end, false))}${info.place ? ` · ${escapeHtml(info.place)}` : ''}</small></div><button class="remove-event" type="button" data-event-id="${escapeHtml(event.id)}" aria-label="移除 ${escapeHtml(info.name)}">×</button></div>`;
+    return `<div class="event-mini"><div class="event-mini-body"><strong>${escapeHtml(info.name)}</strong><small>${escapeHtml(localRange(event.start, event.end))}${info.place ? ` · ${escapeHtml(info.place)}` : ''}</small></div><button class="remove-event" type="button" data-event-id="${escapeHtml(event.id)}" aria-label="移除 ${escapeHtml(info.name)}">×</button></div>`;
   }).join('');
 }
 
 function renderAvailability() {
   $('#availability-count').textContent = String(plan.availability.length);
-  $('#availability-list').innerHTML = plan.availability.map((w, i) => `<div class="event-mini"><span class="event-symbol" aria-hidden="true">◷</span><div class="event-mini-body"><strong>${escapeHtml(localTime(w.start))}</strong><small>至 ${escapeHtml(localTime(w.end))}</small></div><button class="remove-event" type="button" data-availability-index="${i}" aria-label="移除可用时间 ${i + 1}">×</button></div>`).join('');
+  $('#availability-list').innerHTML = plan.availability.map((w, i) => `<div class="event-mini"><div class="event-mini-body"><strong>${escapeHtml(localRange(w.start, w.end))}</strong></div><button class="remove-event" type="button" data-availability-index="${i}" aria-label="移除可用时间 ${i + 1}">×</button></div>`).join('');
 }
 
 function renderTaskEditors() {
@@ -107,10 +111,10 @@ function renderTaskEditors() {
     const confirmed = confirmedIds.has(task.id);
     const confirmedMinutes = plan.confirmed_blocks.filter((b) => b.task_id === task.id).reduce((n, b) => n + b.end - b.start, 0);
     const status = done ? '已完成' : confirmedMinutes === task.duration_minutes ? '已确认' : confirmed ? '部分确认' : '待排程';
-    const meta = [task.minimum_block_minutes ? `可拆分 · 最短 ${task.minimum_block_minutes} 分钟` : '连续工作块'];
+    const meta = task.minimum_block_minutes ? [`可拆分 · 最短 ${task.minimum_block_minutes} 分钟`] : [];
     if (task.earliest_start !== undefined) meta.push(`最早 ${localTime(task.earliest_start)}`);
     if (task.dependencies.length) meta.push(`前置：${task.dependencies.map(taskName).join('、')}`);
-    return `<div class="task-editor"><div class="task-editor-head"><div><h3>${escapeHtml(taskName(task.id))}</h3><span class="task-id">${escapeHtml(task.id)}</span></div><span class="status-chip ${done ? 'done' : ''}">${status}</span></div><p class="task-meta">${escapeHtml(meta.join(' · '))}</p><div class="task-fields"><label>工时 / 分<input class="duration-input" data-task-index="${index}" type="number" min="1" step="1" value="${task.duration_minutes}" ${done ? 'disabled' : ''} /></label><label>截止时间<input class="deadline-input" data-task-index="${index}" type="datetime-local" value="${localInput(task.deadline)}" ${done ? 'disabled' : ''} /></label></div><div class="task-actions"><button type="button" data-action="${done ? 'reopen' : 'complete'}" data-task-id="${escapeHtml(task.id)}">${done ? '恢复待办' : '标记完成'}</button><button type="button" data-action="delete" data-task-id="${escapeHtml(task.id)}">删除任务</button></div></div>`;
+    return `<div class="task-editor"><div class="task-editor-head"><h3>${escapeHtml(taskName(task.id))}</h3><span class="status-chip ${done ? 'done' : ''}">${status}</span></div>${meta.length ? `<p class="task-meta">${escapeHtml(meta.join(' · '))}</p>` : ''}<div class="task-fields"><label>工时 / 分<input class="duration-input" data-task-index="${index}" type="number" min="1" step="1" value="${task.duration_minutes}" ${done ? 'disabled' : ''} /></label><label>截止时间<input class="deadline-input" data-task-index="${index}" type="datetime-local" value="${localInput(task.deadline)}" ${done ? 'disabled' : ''} /></label></div><div class="task-actions"><button type="button" data-action="${done ? 'reopen' : 'complete'}" data-task-id="${escapeHtml(task.id)}">${done ? '恢复待办' : '标记完成'}</button><button type="button" data-action="delete" data-task-id="${escapeHtml(task.id)}">删除任务</button></div></div>`;
   }).join('');
   $('#task-dependency').innerHTML = '<option value="">无</option>' + plan.tasks.map((t) => `<option value="${escapeHtml(t.id)}">${escapeHtml(taskName(t.id))}</option>`).join('');
 }
@@ -136,8 +140,8 @@ function renderTimeline(result, shownPlan) {
     const kind = fixed ? info.kind : entry.confirmed ? '已确认' : '工作块';
     const style = fixed ? `event ${kind === '考试' ? 'exam' : ''}` : entry.confirmed ? 'confirmed' : '';
     const name = fixed ? info.name : taskName(entry.task_id);
-    const detail = fixed ? [entry.id, info.place].filter(Boolean).join(' · ') : entry.task_id;
-    return `<div class="timeline-item ${style}" data-item-id="${escapeHtml(fixed ? entry.id : entry.task_id)}"><div class="timeline-item-head"><strong>${escapeHtml(name)}</strong><span class="kind-pill">${escapeHtml(kind)}</span></div><div class="timeline-when">${escapeHtml(localTime(entry.start))} — ${escapeHtml(localTime(entry.end))}</div><div class="timeline-detail">${escapeHtml(detail)}${!fixed ? ` <button type="button" class="lock-block" data-task-id="${escapeHtml(entry.task_id)}" data-start="${entry.start}" data-end="${entry.end}" data-mode="${entry.confirmed ? 'unlock' : 'lock'}">${entry.confirmed ? '解除锁定' : '锁定此时段'}</button>` : ''}</div></div>`;
+    const detail = fixed ? escapeHtml(info.place) : '';
+    return `<div class="timeline-item ${style}" data-item-id="${escapeHtml(fixed ? entry.id : entry.task_id)}"><div class="timeline-item-head"><strong>${escapeHtml(name)}</strong><span class="kind-pill">${escapeHtml(kind)}</span></div><div class="timeline-when">${escapeHtml(localRange(entry.start, entry.end))}</div>${detail || !fixed ? `<div class="timeline-detail">${detail}${!fixed ? `<button type="button" class="lock-block" data-task-id="${escapeHtml(entry.task_id)}" data-start="${entry.start}" data-end="${entry.end}" data-mode="${entry.confirmed ? 'unlock' : 'lock'}">${entry.confirmed ? '解除锁定' : '锁定此时段'}</button>` : ''}</div>` : ''}</div>`;
   }).join('') : '<div class="empty-state">此时间段尚无事件或工作块。</div>';
 }
 
@@ -158,7 +162,7 @@ function renderResult() {
     ? '<div class="empty-state">请修正输入后重新排程。</div>'
     : shown.unscheduled.length
       ? shown.unscheduled.map((item) => `<div class="unscheduled-item" data-unscheduled-id="${escapeHtml(item.task_id)}"><strong>${escapeHtml(taskName(item.task_id))}</strong><span>${escapeHtml(reasonText(item.reason))} <code>${escapeHtml(item.reason.code)}</code></span></div>`).join('')
-      : '<div class="all-good">所有待办任务均已安排；已完成任务不再占用时间。</div>';
+      : '<div class="all-good">所有待办任务均已安排。</div>';
 }
 
 function recalculate() {
@@ -172,7 +176,7 @@ const storageKey = (key) => `smartplanner:v1:${key}`;
 function saveState() {
   try {
     localStorage.setItem(storageKey(scenarioKey), JSON.stringify({ plan, displayEvents, displayTasks, temporaryEventNumber }));
-    $('#save-status').textContent = '已自动保存到此浏览器';
+    $('#save-status').textContent = '已自动保存';
   } catch {
     $('#save-status').textContent = '本设备无法自动保存，请导出 JSON 备份';
   }
@@ -214,7 +218,7 @@ function updateDates() {
   const sorted = [...plan.availability].sort((a, b) => a.start - b.start);
   const first = sorted[0]?.start ?? Math.floor(Date.now() / 60000);
   const end = sorted.at(-1)?.end ?? first + 480;
-  $('#day-caption').textContent = `可用时间：${localTime(first)} — ${localTime(end)}；按实际开始时间排列。`;
+  $('#day-caption').textContent = `可用时间 ${localRange(first, end)}`;
   $('#event-start').value = localInput(first + 180);
   $('#event-end').value = localInput(first + 210);
   $('#availability-start').value = localInput(end + 60);
@@ -241,7 +245,7 @@ async function loadScenario(key) {
   installPlan(nextPlan, key, scenario.events, scenario.tasks);
 }
 
-$('#timezone-label').textContent = `浏览器本地时间 · ${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+$('#timezone-label').textContent = `本地时间 · ${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
 document.querySelectorAll('.scenario-button').forEach((button) => button.addEventListener('click', () => {
   loadScenario(button.dataset.scenario).catch(showLoadError);
 }));
