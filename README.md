@@ -36,4 +36,4 @@ Exported files contain `app_version: 1`, a `plan` using the original version 1 p
 
 This project adapts [DeadlinePlan](https://github.com/youyong5/DeadlinePlan) by the same author. The earlier project supplied the scheduling rules, versioned input format, example plans, and initial visual layout; SmartPlanner ports the core to JavaScript and adds a user-facing workflow for creating, editing, locally saving, importing, and exporting plans. Both projects are licensed under Apache-2.0; see [LICENSE](LICENSE). No MoonBit source or runtime is required by this repository.
 
-The interface loads Nunito Sans from Google Fonts and 975Maru SC from the cn-fontsource webfont CDN. 975Maru SC is derived from open fonts under the SIL Open Font License 1.1; when either CDN is unavailable, system sans-serif fonts are used.
+The interface uses the installed PingFang SC for Chinese text on Apple devices and loads Noto Sans SC from Google Fonts for other devices. Latin text uses Nunito Sans. Apple's system font is referenced by name and is not bundled; system sans-serif fonts remain as a fallback when web fonts are unavailable.
