@@ -245,7 +245,6 @@ async function loadScenario(key) {
   installPlan(nextPlan, key, scenario.events, scenario.tasks);
 }
 
-$('#timezone-label').textContent = `本地时间 · ${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
 document.querySelectorAll('.scenario-button').forEach((button) => button.addEventListener('click', () => {
   loadScenario(button.dataset.scenario).catch(showLoadError);
 }));
