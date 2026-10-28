@@ -8,8 +8,9 @@
     <meta name="description" content="免费的浏览器日程规划工具：学习与工作任务自动排程，支持保存和导出。" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=8" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/cn-fontsource-975-maru-sc-regular@1.0.1/font.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=9" />
   </head>
   <body>
     <div class="page-shell">
@@ -30,7 +31,7 @@
       </section>
 
       <div class="context-bar">
-        <div><strong id="scenario-title">正在加载…</strong><span id="scenario-subtitle"></span></div>
+        <div><strong id="scenario-title">正在加载…</strong></div>
       </div>
 
       <div class="planner-toolbar" aria-label="计划操作">
@@ -67,7 +68,7 @@
           <section class="card">
             <div class="section-heading"><h2>可用时间</h2><span class="heading-count" id="availability-count">0</span></div>
             <div id="availability-list" class="event-list"></div>
-            <form id="availability-form" class="compact-form"><div class="field-pair"><label>开始<input id="availability-start" type="datetime-local" required /></label><label>结束<input id="availability-end" type="datetime-local" required /></label></div><button type="submit" class="secondary-button">添加可用时段</button></form>
+            <form id="availability-form" class="compact-form"><div class="field-pair"><label>开始<input id="availability-start" class="short-date-input" type="text" inputmode="text" placeholder="10/21 08:00" required /></label><label>结束<input id="availability-end" class="short-date-input" type="text" inputmode="text" placeholder="10/21 17:00" required /></label></div><button type="submit" class="secondary-button">添加可用时段</button></form>
           </section>
 
           <section class="card">
@@ -80,7 +81,7 @@
             <form id="event-form">
               <label>事件名称<input id="event-name" type="text" placeholder="例如：临时讨论会" required maxlength="80" /></label>
               <label>地点 / 说明<input id="event-place" type="text" placeholder="例如：图书馆 204" maxlength="80" /></label>
-              <div class="field-pair"><label>开始<input id="event-start" type="datetime-local" required /></label><label>结束<input id="event-end" type="datetime-local" required /></label></div>
+              <div class="field-pair"><label>开始<input id="event-start" class="short-date-input" type="text" inputmode="text" placeholder="10/21 09:00" required /></label><label>结束<input id="event-end" class="short-date-input" type="text" inputmode="text" placeholder="10/21 10:00" required /></label></div>
               <button type="submit" class="primary-button">加入并重新计算 <span>→</span></button>
             </form>
           </section>
@@ -91,7 +92,7 @@
           <section class="card add-card"><div class="section-heading"><h2>添加任务</h2></div>
             <form id="task-form">
               <label>任务名称<input id="task-name" type="text" required maxlength="80" placeholder="例如：完成报告初稿" /></label>
-              <div class="field-pair"><label>工时 / 分<input id="task-duration" type="number" min="1" max="2147483647" value="60" required /></label><label>截止时间<input id="task-deadline" type="datetime-local" required /></label></div>
+              <div class="field-pair"><label>工时 / 分<input id="task-duration" type="number" min="1" max="2147483647" value="60" required /></label><label>截止时间<input id="task-deadline" class="short-date-input" type="text" inputmode="text" placeholder="10/21 17:00" required /></label></div>
               <label>前置任务（可选）<select id="task-dependency"><option value="">无</option></select></label>
               <label class="inline-check"><input id="task-split" type="checkbox" /> 允许分段安排</label>
               <label id="minimum-wrap" hidden>每段至少 / 分<input id="task-minimum" type="number" min="1" value="25" /></label>

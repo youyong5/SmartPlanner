@@ -1,11 +1,11 @@
 import { runPlan } from './src/planner.js';
+import { shortDateTime, parseShortDateTime } from './src/date-display.js';
 
 // Display-only labels stay outside the versioned planning document and core API.
 const SCENARIOS = {
   student: {
     file: './data/student-plan.v1.json',
     title: '学期安排',
-    subtitle: '课程 · 作业 · 考前复习',
     events: {
       'morning-lecture': { name: '数学分析', kind: '课程', place: '理科楼 A203' },
       'afternoon-lecture': { name: '生物实验课', kind: '课程', place: '实验楼 B106' },
@@ -21,7 +21,6 @@ const SCENARIOS = {
   project: {
     file: './data/project-plan.v1.json',
     title: '项目交付',
-    subtitle: '设计 · 审批 · 发布',
     events: {
       'vendor-call': { name: '供应商沟通', kind: '会议', place: '线上会议室' },
     },
@@ -31,14 +30,13 @@ const SCENARIOS = {
       release: '最终发布',
     },
   },
-  custom: { title: '我的计划', subtitle: '自己的时间 · 自己的任务', events: {}, tasks: {} },
+  custom: { title: '我的计划', events: {}, tasks: {} },
 };
 
 const $ = (selector) => document.querySelector(selector);
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 })[character]);
-const pad = (number) => String(number).padStart(2, '0');
 
 let scenarioKey = 'student';
 let plan = null;
@@ -58,7 +56,7 @@ function localTime(minute, includeDate = true) {
   const date = dateForMinute(minute);
   if (!date) return `UTC 分钟 ${minute}`;
   const options = includeDate
-    ? { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }
+    ? { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }
     : { hour: '2-digit', minute: '2-digit', hour12: false };
   return new Intl.DateTimeFormat('zh-CN', options).format(date);
 }
@@ -70,16 +68,22 @@ function localRange(start, end) {
   return `${localTime(start)} — ${localTime(end, !sameDay)}`;
 }
 
-function localInput(minute) {
-  const date = dateForMinute(minute);
-  if (!date) return '';
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+function setDateInput(input, minute) {
+  input.value = shortDateTime(minute);
+  input.dataset.anchorMinute = String(minute);
+  input.setCustomValidity('');
 }
 
-function minuteFromInput(value) {
-  const milliseconds = new Date(value).getTime();
-  return Number.isFinite(milliseconds) ? Math.round(milliseconds / 60_000) : null;
+function readDateInput(input) {
+  const minute = parseShortDateTime(input.value, Number(input.dataset.anchorMinute));
+  input.setCustomValidity(minute === null ? '请按“月/日 时:分”输入，例如 10/21 17:00' : '');
+  if (minute === null) input.reportValidity();
+  return minute;
 }
+
+document.addEventListener('input', (event) => {
+  if (event.target.matches('.short-date-input')) event.target.setCustomValidity('');
+});
 
 function taskName(id) {
   return displayTasks[id] ?? id;
@@ -114,7 +118,7 @@ function renderTaskEditors() {
     const meta = task.minimum_block_minutes ? [`可拆分 · 最短 ${task.minimum_block_minutes} 分钟`] : [];
     if (task.earliest_start !== undefined) meta.push(`最早 ${localTime(task.earliest_start)}`);
     if (task.dependencies.length) meta.push(`前置：${task.dependencies.map(taskName).join('、')}`);
-    return `<div class="task-editor"><div class="task-editor-head"><h3>${escapeHtml(taskName(task.id))}</h3><span class="status-chip ${done ? 'done' : ''}">${status}</span></div>${meta.length ? `<p class="task-meta">${escapeHtml(meta.join(' · '))}</p>` : ''}<div class="task-fields"><label>工时 / 分<input class="duration-input" data-task-index="${index}" type="number" min="1" step="1" value="${task.duration_minutes}" ${done ? 'disabled' : ''} /></label><label>截止时间<input class="deadline-input" data-task-index="${index}" type="datetime-local" value="${localInput(task.deadline)}" ${done ? 'disabled' : ''} /></label></div><div class="task-actions"><button type="button" data-action="${done ? 'reopen' : 'complete'}" data-task-id="${escapeHtml(task.id)}">${done ? '恢复待办' : '标记完成'}</button><button type="button" data-action="delete" data-task-id="${escapeHtml(task.id)}">删除任务</button></div></div>`;
+    return `<details class="task-editor"><summary class="task-editor-summary"><span class="task-editor-head"><strong>${escapeHtml(taskName(task.id))}</strong><span class="status-chip ${done ? 'done' : ''}">${status}</span></span><span class="task-preview">${task.duration_minutes} 分 · 截止 <span class="task-deadline-preview">${escapeHtml(shortDateTime(task.deadline))}</span></span></summary><div class="task-editor-body">${meta.length ? `<p class="task-meta">${escapeHtml(meta.join(' · '))}</p>` : ''}<div class="task-fields"><label>工时 / 分<input class="duration-input" data-task-index="${index}" type="number" min="1" step="1" value="${task.duration_minutes}" ${done ? 'disabled' : ''} /></label><label>截止时间<input class="deadline-input short-date-input" data-task-index="${index}" data-anchor-minute="${task.deadline}" type="text" inputmode="text" value="${escapeHtml(shortDateTime(task.deadline))}" placeholder="10/21 17:00" ${done ? 'disabled' : ''} /></label></div><div class="task-actions"><button type="button" data-action="${done ? 'reopen' : 'complete'}" data-task-id="${escapeHtml(task.id)}">${done ? '恢复待办' : '标记完成'}</button><button type="button" data-action="delete" data-task-id="${escapeHtml(task.id)}">删除任务</button></div></div></details>`;
   }).join('');
   $('#task-dependency').innerHTML = '<option value="">无</option>' + plan.tasks.map((t) => `<option value="${escapeHtml(t.id)}">${escapeHtml(taskName(t.id))}</option>`).join('');
 }
@@ -204,7 +208,6 @@ function installPlan(nextPlan, key, events = {}, tasks = {}, serial = 0) {
   lastValidResult = null;
   lastValidPlan = null;
   $('#scenario-title').textContent = SCENARIOS[key].title;
-  $('#scenario-subtitle').textContent = SCENARIOS[key].subtitle;
   for (const button of document.querySelectorAll('.scenario-button')) {
     const active = button.dataset.scenario === key;
     button.classList.toggle('active', active);
@@ -219,11 +222,11 @@ function updateDates() {
   const first = sorted[0]?.start ?? Math.floor(Date.now() / 60000);
   const end = sorted.at(-1)?.end ?? first + 480;
   $('#day-caption').textContent = `可用时间 ${localRange(first, end)}`;
-  $('#event-start').value = localInput(first + 180);
-  $('#event-end').value = localInput(first + 210);
-  $('#availability-start').value = localInput(end + 60);
-  $('#availability-end').value = localInput(end + 180);
-  $('#task-deadline').value = localInput(end);
+  setDateInput($('#event-start'), first + 180);
+  setDateInput($('#event-end'), first + 210);
+  setDateInput($('#availability-start'), end + 60);
+  setDateInput($('#availability-end'), end + 180);
+  setDateInput($('#task-deadline'), end);
 }
 
 async function loadScenario(key) {
@@ -255,16 +258,28 @@ $('#task-list').addEventListener('input', (event) => {
   if (input.classList.contains('duration-input')) {
     if (input.value === '') return;
     plan.tasks[index].duration_minutes = Number(input.value);
-  } else if (input.classList.contains('deadline-input')) {
-    if (!input.value) return;
-    plan.tasks[index].deadline = minuteFromInput(input.value);
   } else return;
+  input.closest('.task-editor').querySelector('.task-preview').firstChild.textContent = `${plan.tasks[index].duration_minutes} 分 · 截止 `;
+  recalculate();
+});
+$('#task-list').addEventListener('change', (event) => {
+  const input = event.target;
+  if (!input.classList.contains('deadline-input')) return;
+  const index = Number(input.dataset.taskIndex);
+  if (!plan?.tasks[index]) return;
+  const minute = readDateInput(input);
+  if (minute === null) return;
+  plan.tasks[index].deadline = minute;
+  setDateInput(input, minute);
+  input.closest('.task-editor').querySelector('.task-deadline-preview').textContent = shortDateTime(minute);
   recalculate();
 });
 $('#event-form').addEventListener('submit', (event) => {
   event.preventDefault();
+  const start = readDateInput($('#event-start')), end = readDateInput($('#event-end'));
+  if (start === null || end === null || end <= start) { $('#save-status').textContent = '固定安排的结束须晚于开始'; return; }
   const id = `temporary-${++temporaryEventNumber}`;
-  plan.fixed_events.push({ id, start: minuteFromInput($('#event-start').value), end: minuteFromInput($('#event-end').value) });
+  plan.fixed_events.push({ id, start, end });
   displayEvents[id] = { name: $('#event-name').value.trim(), kind: '临时', place: $('#event-place').value.trim() };
   renderEvents();
   recalculate();
@@ -280,7 +295,7 @@ $('#event-list').addEventListener('click', (event) => {
 
 $('#availability-form').addEventListener('submit', (event) => {
   event.preventDefault();
-  const start = minuteFromInput($('#availability-start').value), end = minuteFromInput($('#availability-end').value);
+  const start = readDateInput($('#availability-start')), end = readDateInput($('#availability-end'));
   if (start == null || end == null || end <= start) { $('#save-status').textContent = '可用时间的结束须晚于开始'; return; }
   plan.availability.push({ start, end });
   renderAvailability(); updateDates(); recalculate();
@@ -296,7 +311,7 @@ $('#task-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const name = $('#task-name').value.trim();
   const duration = Number($('#task-duration').value);
-  const deadline = minuteFromInput($('#task-deadline').value);
+  const deadline = readDateInput($('#task-deadline'));
   const minimum = Number($('#task-minimum').value);
   if (!name || !Number.isInteger(duration) || duration < 1 || deadline == null || ($('#task-split').checked && (!Number.isInteger(minimum) || minimum < 1 || minimum > duration))) {
     $('#save-status').textContent = '请检查任务名称、工时、截止时间和最短块'; return;
@@ -308,7 +323,7 @@ $('#task-form').addEventListener('submit', (event) => {
   displayTasks[id] = name;
   renderTaskEditors(); recalculate();
   $('#task-form').reset(); $('#minimum-wrap').hidden = true;
-  $('#task-deadline').value = localInput(deadline);
+  setDateInput($('#task-deadline'), deadline);
 });
 $('#task-list').addEventListener('click', (event) => {
   const button = event.target.closest('[data-action]');
