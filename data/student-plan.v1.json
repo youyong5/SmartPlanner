@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "availability": [{ "start": 29875680, "end": 29876220 }],
+  "fixed_events": [
+    { "id": "morning-lecture", "start": 29875740, "end": 29875830 },
+    { "id": "afternoon-lecture", "start": 29875980, "end": 29876070 },
+    { "id": "biology-exam", "start": 29876160, "end": 29876220 }
+  ],
+  "tasks": [
+    { "id": "topic-announced", "duration_minutes": 1, "deadline": 29875681, "dependencies": [] },
+    { "id": "calculus-homework", "duration_minutes": 60, "deadline": 29875980, "dependencies": ["topic-announced"], "earliest_start": 29875830 },
+    { "id": "biology-review", "duration_minutes": 210, "deadline": 29876160, "dependencies": ["topic-announced"], "minimum_block_minutes": 60 },
+    { "id": "exam-setup", "duration_minutes": 30, "deadline": 29876220, "dependencies": ["biology-review"] }
+  ],
+  "completed": [{ "id": "topic-announced", "completed_at": 29875680 }],
+  "confirmed_blocks": [{ "task_id": "biology-review", "start": 29875680, "end": 29875740 }]
+}

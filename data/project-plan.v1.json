@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "availability": [{ "start": 29877120, "end": 29877240 }],
+  "fixed_events": [{ "id": "vendor-call", "start": 29877150, "end": 29877170 }],
+  "tasks": [
+    { "id": "design", "duration_minutes": 70, "deadline": 29877210, "dependencies": [], "minimum_block_minutes": 20 },
+    { "id": "approval", "duration_minutes": 1, "deadline": 29877230, "dependencies": [] },
+    { "id": "release", "duration_minutes": 10, "deadline": 29877240, "dependencies": ["design", "approval"] }
+  ],
+  "completed": [{ "id": "approval", "completed_at": 29877220 }],
+  "confirmed_blocks": [{ "task_id": "design", "start": 29877120, "end": 29877150 }]
+}
