@@ -27,6 +27,6 @@ Exported files contain `app_version: 1`, a `plan` using the original version 1 p
 - `app.js`, `index.html`, `styles.css`: browser interaction and responsive UI.
 - `data/`: original academic and project examples. Their labels and locations live in the presentation layer.
 - `tests/`: parity and edge-case checks for the port, including confirmed progress, dependencies, rollback, schema errors, and time boundaries.
-- `scripts/build.mjs`: copies static assets into `dist/` for GitHub Pages.
+- `scripts/build.mjs`: copies static assets into `dist/` for static hosting. GitHub Actions tests the project and retains this build as an artifact; the live experience link above is deployed separately.
 
 This project adapts [DeadlinePlan](https://github.com/youyong5/DeadlinePlan) by the same author. The earlier project supplied the scheduling rules, versioned input format, example plans, and initial visual layout; SmartPlanner ports the core to JavaScript and adds a user-facing workflow for creating, editing, locally saving, importing, and exporting plans. Both projects are licensed under Apache-2.0; see [LICENSE](LICENSE). No MoonBit source or runtime is required by this repository.

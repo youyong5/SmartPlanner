@@ -1,4 +1,4 @@
-name: Test and deploy
+name: Test and build
 on:
   push:
     branches: [master, main]
@@ -16,20 +16,7 @@ jobs:
           node-version: '24'
       - run: npm run check
       - run: git diff --exit-code
-      - uses: actions/upload-pages-artifact@v3
-        if: github.event_name != 'pull_request'
+      - uses: actions/upload-artifact@v4
         with:
-          path: dist
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/deploy-pages@v4
-        id: deployment
+          name: smartplanner-static-site
+          path: dist/
