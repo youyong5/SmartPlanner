@@ -177,7 +177,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 
 /* Quiet graphite glass, adapted from the mobile reference to the planner grid. */
 :root { --bg:#646d79; --surface:linear-gradient(130deg,rgba(255,255,255,.18),rgba(239,245,250,.075) 58%,rgba(255,255,255,.13)); --ink:#f8fafc; --muted:#d7dce3; --quiet:#cbd4de; --line:rgba(255,255,255,.24); --accent:#e5edf5; --shadow:0 20px 46px rgba(22,30,42,.18),inset 0 1px rgba(255,255,255,.22); }
-body { color:var(--ink); background:radial-gradient(ellipse 65% 52% at 9% 2%,rgba(210,222,236,.23),transparent 78%),radial-gradient(ellipse 60% 72% at 93% 70%,rgba(37,46,61,.42),transparent 77%),linear-gradient(145deg,#7e8794,#606976 58%,#525b69); background-attachment:fixed; font-family:"Nunito Sans","975Maru SC","PingFang SC","Microsoft YaHei UI",sans-serif; }
+body { color:var(--ink); background:radial-gradient(ellipse 65% 52% at 9% 2%,rgba(210,222,236,.23),transparent 78%),radial-gradient(ellipse 60% 72% at 93% 70%,rgba(37,46,61,.42),transparent 77%),linear-gradient(145deg,#7e8794,#606976 58%,#525b69); background-attachment:fixed; font-family:"Nunito Sans","975Maru SC","PingFang SC","Microsoft YaHei UI",sans-serif; font-synthesis:none; }
+h1 { color:#e3e9f0; letter-spacing:-.005em; line-height:1.32; }
+h1 strong { font-weight:600; }
+.section-heading h2,.schedule-heading h2,.context-bar strong { letter-spacing:.015em; }
+.timeline-item-head strong,.event-mini strong,.task-editor-head strong { letter-spacing:.018em; }
+.lock-block { letter-spacing:.015em; }
 .topbar,.scenario-switch { background:linear-gradient(120deg,rgba(236,242,249,.19),rgba(226,234,243,.085)); border-color:rgba(255,255,255,.33); box-shadow:0 15px 35px rgba(30,40,55,.17),inset 0 1px rgba(255,255,255,.35),inset 0 -1px rgba(255,255,255,.07); }
 .brand-accent,.hero-description,.context-bar strong { color:var(--ink); }
 .brand-mark { background:rgba(34,42,53,.72); }
