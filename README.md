@@ -4,6 +4,8 @@ SmartPlanner is a browser-based planner for study, projects, and everyday work. 
 
 **Try it:** [open SmartPlanner](https://smartplanner-youyong5.sharpbow12.chatgpt.site/). The page runs entirely in the browser, with no account or server database. Data is saved in that browser's local storage; use **导出 JSON** for a portable backup. Clearing browser storage or changing devices will not carry the data over automatically.
 
+For a GitHub Pages address, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**, then run **Actions → Publish GitHub Pages → Run workflow**. The workflow builds and tests the same static site before publishing. Once deployment succeeds, use the URL shown in the workflow's `github-pages` environment; the Pages site is separate from this repository's code view. This setup requires repository administration access and is not enabled by the source files alone.
+
 ## Run locally
 
 Requires Node.js 20+; no package installation is needed.
@@ -27,6 +29,6 @@ Exported files contain `app_version: 1`, a `plan` using the original version 1 p
 - `app.js`, `index.html`, `styles.css`: browser interaction and responsive UI.
 - `data/`: original academic and project examples. Their labels and locations live in the presentation layer.
 - `tests/`: parity and edge-case checks for the port, including confirmed progress, dependencies, rollback, schema errors, and time boundaries.
-- `scripts/build.mjs`: copies static assets into `dist/` for static hosting. GitHub Actions tests the project and retains this build as an artifact; the live experience link above is deployed separately.
+- `scripts/build.mjs`: copies static assets into `dist/` for static hosting. GitHub Actions tests the project and retains this build as an artifact; the live experience link above is deployed separately. `.github/workflows/pages.yml` is ready for GitHub Pages when enabled in repository settings.
 
 This project adapts [DeadlinePlan](https://github.com/youyong5/DeadlinePlan) by the same author. The earlier project supplied the scheduling rules, versioned input format, example plans, and initial visual layout; SmartPlanner ports the core to JavaScript and adds a user-facing workflow for creating, editing, locally saving, importing, and exporting plans. Both projects are licensed under Apache-2.0; see [LICENSE](LICENSE). No MoonBit source or runtime is required by this repository.
