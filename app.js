@@ -7,15 +7,15 @@ const SCENARIOS = {
     file: './data/student-plan.v1.json',
     title: '学期安排',
     events: {
-      'morning-lecture': { name: '数学分析', kind: '课程', place: '理科楼 A203' },
-      'afternoon-lecture': { name: '生物实验课', kind: '课程', place: '实验楼 B106' },
-      'biology-exam': { name: '生物学期中考试', kind: '考试', place: '综合楼 401' },
+      'morning-lecture': { name: '数据结构课程', kind: '课程', place: '教学楼 302' },
+      'afternoon-lecture': { name: '科研组会', kind: '会议', place: '科研楼 401' },
+      'biology-exam': { name: '实训项目阶段评审', kind: '评审', place: '实训室 205' },
     },
     tasks: {
-      'topic-announced': '复习范围公布',
-      'calculus-homework': '微积分作业',
-      'biology-review': '生物考前复习',
-      'exam-setup': '考试用品准备',
+      'topic-announced': '实训需求确认',
+      'calculus-homework': '数据结构实验',
+      'biology-review': '实训项目开发',
+      'exam-setup': '阶段演示准备',
     },
   },
   project: {
@@ -236,7 +236,12 @@ async function loadScenario(key) {
     try {
       const state = JSON.parse(saved);
       if (state.plan?.schema_version === 1 && Array.isArray(state.plan.tasks) && Array.isArray(state.plan.availability) && Array.isArray(state.plan.fixed_events)) {
-        installPlan(state.plan, key, state.displayEvents, state.displayTasks ?? scenario.tasks, state.temporaryEventNumber);
+        // Refresh built-in labels for plans saved before an example's wording changed.
+        // Preserve labels for user-added events and tasks.
+        installPlan(state.plan, key,
+          { ...state.displayEvents, ...scenario.events },
+          { ...state.displayTasks, ...scenario.tasks },
+          state.temporaryEventNumber);
         return;
       }
     } catch { /* use clean example */ }
