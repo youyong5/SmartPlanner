@@ -2,9 +2,9 @@
 
 SmartPlanner is a browser-based planner for study, projects, and everyday work. Add available hours, fixed commitments, tasks, deadlines, and dependencies; the page recalculates immediately and explains work it cannot fit. Confirmed work stays in place when plans change.
 
-**Try it:** [open SmartPlanner](https://smartplanner-youyong5.sharpbow12.chatgpt.site/). The page runs entirely in the browser, with no account or server database. Data is saved in that browser's local storage; use **导出 JSON** for a portable backup. Clearing browser storage or changing devices will not carry the data over automatically.
+**Try it:** [open SmartPlanner](https://youyong5.github.io/SmartPlanner/). The page runs entirely in the browser, with no account or server database. Data is saved in that browser's local storage; use **导出 JSON** for a portable backup. Clearing browser storage or changing devices will not carry the data over automatically.
 
-For a GitHub Pages address, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**, then run **Actions → Publish GitHub Pages → Run workflow**. The workflow builds and tests the same static site before publishing. Once deployment succeeds, use the URL shown in the workflow's `github-pages` environment; the Pages site is separate from this repository's code view. This setup requires repository administration access and is not enabled by the source files alone.
+The GitHub Pages workflow tests, builds, and publishes the static site when `main` changes. You can also run **Actions → Publish GitHub Pages → Run workflow** manually. The Pages site is separate from this repository's code view.
 
 ## Run locally
 
