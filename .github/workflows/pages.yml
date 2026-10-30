@@ -1,7 +1,8 @@
 name: Publish GitHub Pages
 
-# Enable Pages in Settings → Pages (Source: GitHub Actions), then run this workflow.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
